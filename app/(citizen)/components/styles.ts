@@ -1,0 +1,22 @@
+// Common styles and colors for the application
+export const COLORS = {
+  white: '#FFFFFF',
+  red: '#EF5350',
+  blue: '#42A5F5',
+  green: '#66BB6A',
+  yellow: '#FFCA28',
+  darkBlue: '#1565C0',
+  lightGray: '#F5F5F5',
+  mediumGray: '#E0E0E0',
+  darkGray: '#424242',
+  black: '#212121',
+  background: '#F8F9FA',
+  primary: '#1E88E5',
+  primaryLight: '#64B5F6',
+  primaryDark: '#1565C0',
+  textPrimary: '#212121',
+  textSecondary: '#757575',
+  error: '#F44336',
+  success: '#4CAF50',
+  warning: '#FFC107',
+};
