@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, Text, StyleSheet, ScrollView } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, TextInput, Button, Text, StyleSheet, ScrollView, Image, Animated, Easing } from 'react-native';
 import Logo from '../../src/components/Logo';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
@@ -10,6 +10,10 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [key, setKey] = useState(0);
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideUpAnim = useRef(new Animated.Value(30)).current;
 
   // Force remount of TextInputs when screen gains focus to prevent autofill
   useFocusEffect(
@@ -17,7 +21,26 @@ export default function LoginScreen() {
       setEmail('');
       setPassword('');
       setKey(prev => prev + 1);
-    }, [])
+      
+      // Reset animations
+      fadeAnim.setValue(0);
+      slideUpAnim.setValue(30);
+      
+      // Start animations
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideUpAnim, {
+          toValue: 0,
+          duration: 800,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        })
+      ]).start();
+    }, [fadeAnim, slideUpAnim])
   );
 
   const onSubmit = async () => {
@@ -35,39 +58,55 @@ export default function LoginScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <View style={styles.container}>
-        <Logo size={800} />
-        <Text style={styles.title}>Department of Information and</Text>
-        <Text style={styles.title1}>Communications Technology</Text>
-        <Text style={styles.title2}>Sign In to your Account</Text>
-        <TextInput
-          key={`email-${key}`}
-          placeholder="Email"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          autoComplete="new-password"
-          autoCorrect={false}
-          textContentType="none"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-        />
-        <TextInput
-          key={`password-${key}`}
-          placeholder="Password"
-          secureTextEntry
-          autoComplete="new-password"
-          autoCorrect={false}
-          textContentType="none"
-          importantForAutofill="no"
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-        />
-        <Button title="Login" onPress={onSubmit} />
-        <Text style={styles.link} onPress={() => router.push('/(auth)/register')}>
-          Create an account
-        </Text>
+      <Image 
+        source={require('../../assets/back.png')} 
+        style={styles.backgroundImage} 
+      />
+      <View style={styles.overlay}>
+        <Animated.View 
+          style={[
+            styles.container, 
+            { 
+              opacity: fadeAnim,
+              transform: [{ translateY: slideUpAnim }] 
+            }
+          ]}
+        >
+          <Animated.View style={{ opacity: fadeAnim }}>
+            <Logo size={800} />
+          </Animated.View>
+          <Animated.Text style={[styles.title, { opacity: fadeAnim }]}>Department of Information and</Animated.Text>
+          <Animated.Text style={[styles.title1, { opacity: fadeAnim }]}>Communications Technology</Animated.Text>
+          <Animated.Text style={[styles.title2, { opacity: fadeAnim }]}>Citizen Portal Login</Animated.Text>
+          <TextInput
+            key={`email-${key}`}
+            placeholder="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            autoComplete="new-password"
+            autoCorrect={false}
+            textContentType="none"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+          />
+          <TextInput
+            key={`password-${key}`}
+            placeholder="Password"
+            secureTextEntry
+            autoComplete="new-password"
+            autoCorrect={false}
+            textContentType="none"
+            importantForAutofill="no"
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+          />
+          <Button title="Login" onPress={onSubmit} />
+          <Text style={styles.link} onPress={() => router.push('/(auth)/register')}>
+            Create an account
+          </Text>
+        </Animated.View>
       </View>
     </ScrollView>
   );
@@ -76,6 +115,16 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
+  },
+  backgroundImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+  } as const,
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    padding: 16,
     justifyContent: 'center',
   },
   container: { 
@@ -86,15 +135,40 @@ const styles = StyleSheet.create({
     width: '100%',
     alignSelf: 'center',
   },
-    title: { fontSize: 16, fontWeight: 'bold', marginBottom: 1, textAlign: 'center', color: '#0156acff' },
-    title1: { fontSize: 16, fontWeight: 'bold', marginBottom: 24, textAlign: 'center', color: '#0156acff' },
-    title2: { fontSize: 24, fontWeight: 'bold', marginBottom: 24, textAlign: 'center', color: '#333' },
-    input: {
+  title: { 
+    fontSize: 16, 
+    fontWeight: 'bold', 
+    marginBottom: 1, 
+    textAlign: 'center', 
+    color: '#0156acff' 
+  },
+  title1: { 
+    fontSize: 16, 
+    fontWeight: 'bold', 
+    marginBottom: 24, 
+    textAlign: 'center', 
+    color: '#0156acff' 
+  },
+  title2: { 
+    fontSize: 24, 
+    fontWeight: 'bold', 
+    marginBottom: 24, 
+    textAlign: 'center', 
+    color: '#333' 
+  },
+  input: {
     borderWidth: 1,
     borderColor: '#ccc',
     padding: 12,
     marginBottom: 12,
     borderRadius: 8,
+    backgroundColor: '#fff',
   },
-  link: { marginTop: 16, textAlign: 'center', color: '#0066cc', marginBottom: 100 },
+  link: { 
+    marginTop: 16, 
+    textAlign: 'center', 
+    color: '#0066cc', 
+    marginBottom: 100, 
+    fontWeight: 'bold'
+  },
 });
